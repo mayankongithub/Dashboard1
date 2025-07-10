@@ -158,12 +158,12 @@ const BugAreas = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 pt-4">
+    <div className="min-h-screen bg-gradient-to-br from-white-50 to-gray-100 p-6 pt-4">
       <div className="max-w-7xl mx-auto mb-8">
         {/* Header Spacing */}
         <div className="mb-6"></div>
 
-        <div className="flex justify-end items-center mb-6">
+        <div className="flex justify-end items-center mb-0">
             <svg
               className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`}
               fill="none"
@@ -173,10 +173,12 @@ const BugAreas = () => {
             </svg>
         </div>
 
+        {/* done */}
+
         {/* Enhanced Bar Chart Section */}
         {chartData.length > 0 ? (
-          <div className="bg-white p-8 rounded-2xl shadow-xl mb-8 border border-gray-100">
-            <div className="text-center mb-6">
+          <div className="bg-white p-8 rounded-2xl shadow-xl mb-4 border border-gray-100">
+            <div className="text-center mb-4">
               <h3 className="text-2xl font-bold text-gray-800 mb-2">Bug Count by Area</h3>
               <p className="text-gray-600">Interactive visualization of bug distribution across different areas</p>
             </div>

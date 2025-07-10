@@ -9,6 +9,7 @@ import Tickets from './components/Tickets'
 import BugStats from './components/BugStats'
 import BugAreas from './components/BugAreas'
 
+
 function App() {
   return (
     <Router>
@@ -26,6 +27,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
+
       </div>
     </Router>
   )

@@ -29,19 +29,19 @@ const OptimizedManualAutomate = () => {
 
   // Memoize expensive calculations - MUST be before any conditional returns
   const chartData = useMemo(() => {
-    if (!dashboardData?.allTestCaseData) return [];
+    if (!dashboardData?.testCases) return [];
     return [
-      { name: 'Manual TCs', value: dashboardData.allTestCaseData.manual || 0 },
-      { name: 'Automated TCs', value: dashboardData.allTestCaseData.automated || 0 },
+      { name: 'Manual TCs', value: dashboardData.testCases.manual || 0 },
+      { name: 'Automated TCs', value: dashboardData.testCases.automated || 0 },
     ];
   }, [dashboardData]);
 
   const { total, manualPercentage, automatedPercentage } = useMemo(() => {
-    if (!dashboardData?.allTestCaseData) return { total: 0, manualPercentage: 0, automatedPercentage: 0 };
+    if (!dashboardData?.testCases) return { total: 0, manualPercentage: 0, automatedPercentage: 0 };
 
-    const allManual = dashboardData.allTestCaseData.manual || 0;
-    const allAutomated = dashboardData.allTestCaseData.automated || 0;
-    const allTotal = dashboardData.allTestCaseData.all || 0;
+    const allManual = dashboardData.testCases.manual || 0;
+    const allAutomated = dashboardData.testCases.automated || 0;
+    const allTotal = dashboardData.testCases.total || (allManual + allAutomated);
 
     return {
       total: allTotal,
@@ -242,7 +242,7 @@ const OptimizedManualAutomate = () => {
   const shouldShowLoader = loading ||
     !dashboardData ||
     !progressiveLoading.basic ||
-    !dashboardData.allTestCaseData ||
+    !dashboardData.testCases ||
     !dashboardData.monthlyData;
 
   if (shouldShowLoader && !error) {
@@ -294,11 +294,11 @@ const OptimizedManualAutomate = () => {
                 </tr>
                 <tr className="bg-gray-100">
                   <td className="py-2 px-4 border border-gray-300">Manual TCs</td>
-                  <td className="py-2 px-4 border border-gray-300">{dashboardData?.allTestCaseData?.manual || 0}</td>
+                  <td className="py-2 px-4 border border-gray-300">{dashboardData?.testCases?.manual || 0}</td>
                 </tr>
                 <tr className="bg-pink-100">
                   <td className="py-2 px-4 border border-gray-300">Automated TCs</td>
-                  <td className="py-2 px-4 border border-gray-300">{dashboardData?.allTestCaseData?.automated || 0}</td>
+                  <td className="py-2 px-4 border border-gray-300">{dashboardData?.testCases?.automated || 0}</td>
                 </tr>
               </tbody>
             </table>
