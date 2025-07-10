@@ -63,20 +63,21 @@ const ManualAutomate = () => {
       setMonthlyData(monthlyResponse);
       setProgressiveLoading(prev => ({ ...prev, charts: true }));
 
-      // Phase 3: Fetch bug stats data (non-blocking)
+      // Phase 3: Fetch bug stats data sequentially
       console.log('Phase 3: Fetching bug stats data...');
-      Promise.all([
-        fetch('/api/jira-bug-stats').then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! ${res.status}`))),
-        fetch('/api/jira-monthly-triaging').then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! ${res.status}`)))
-      ]).then(([bugStatsResponse, monthlyTriagingResponse]) => {
+      try {
+        const bugStatsResponse = await fetch('/api/jira-bug-stats').then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! ${res.status}`)));
         setBugStatsData(bugStatsResponse);
+
+        console.log('Phase 3: Fetching monthly triaging data...');
+        const monthlyTriagingResponse = await fetch('/api/jira-monthly-triaging').then(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! ${res.status}`)));
         setMonthlyTriagingData(monthlyTriagingResponse);
         setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
-      }).catch(err => {
+      } catch (err) {
         console.error('Error fetching bug stats:', err.message);
         setBugStatsError(`Error fetching bug stats: ${err.message}`);
         setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
-      });
+      }
 
       setLoading(false);
     } catch (err) {

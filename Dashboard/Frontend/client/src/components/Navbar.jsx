@@ -51,9 +51,6 @@ const Navbar = () => {
           <Link to="/monthly" className="text-white hover:text-gray-300 transition-colors duration-200 font-medium">
             Monthly Report
           </Link>
-          <Link to="/" className="text-white hover:text-gray-300 transition-colors duration-200 font-medium">
-            Test Case Status
-          </Link>
           <Link to="/bug-stats" className="text-white hover:text-gray-300 transition-colors duration-200 font-medium">
             Bug Stats
           </Link>
@@ -105,13 +102,6 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Monthly Report
-            </Link>
-            <Link
-              to="/"
-              className="px-4 py-3 text-white hover:bg-gray-600 transition-colors duration-200"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Test Case Status
             </Link>
             <Link
               to="/bug-stats"

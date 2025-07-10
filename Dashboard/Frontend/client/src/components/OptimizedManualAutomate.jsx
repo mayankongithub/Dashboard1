@@ -157,27 +157,27 @@ const OptimizedManualAutomate = () => {
       setDashboardData(batchData);
       setProgressiveLoading({ basic: true, charts: true, bugStats: false });
 
-      // Fetch monthly triaging data separately (non-blocking)
+      // Fetch monthly triaging data sequentially
       console.log('Fetching monthly triaging data...');
-      const triagingController = new AbortController();
-      const triagingTimeoutId = setTimeout(() => triagingController.abort(), 15000); // 15 second timeout
+      try {
+        const triagingController = new AbortController();
+        const triagingTimeoutId = setTimeout(() => triagingController.abort(), 15000); // 15 second timeout
 
-      fetch(`/api/jira-monthly-triaging`, {
-        signal: triagingController.signal
-      })
-        .then(response => {
-          clearTimeout(triagingTimeoutId);
-          if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
-          return response.json();
-        })
-        .then(monthlyTriagingResponse => {
-          setMonthlyTriagingData(monthlyTriagingResponse);
-          setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
-        })
-        .catch(err => {
-          console.error('Error fetching monthly triaging data:', err.message);
-          setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
+        const response = await fetch(`/api/jira-monthly-triaging`, {
+          signal: triagingController.signal
         });
+
+        clearTimeout(triagingTimeoutId);
+
+        if (!response.ok) throw new Error(`HTTP error! ${response.status}`);
+        const monthlyTriagingResponse = await response.json();
+
+        setMonthlyTriagingData(monthlyTriagingResponse);
+        setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
+      } catch (err) {
+        console.error('Error fetching monthly triaging data:', err.message);
+        setProgressiveLoading(prev => ({ ...prev, bugStats: true }));
+      }
 
       setLoading(false);
       clearTimeout(loadingTimeout);
