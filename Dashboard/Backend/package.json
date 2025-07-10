@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "concurrently --kill-others \"nodemon server.js\" \"cd ../Frontend/client && npm run dev:frontend-only\"",
+    "dev": "nodemon server.js",
     "dev:backend-only": "nodemon server.js"
   },
   "keywords": [
@@ -16,15 +16,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@keyv/redis": "^3.0.1",
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "express": "^4.18.3",
     "jira-client": "^8.2.2",
+    "keyv": "^5.1.0",
     "moment": "^2.30.1",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "redis": "^4.7.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "nodemon": "^3.1.10"
   }
 }

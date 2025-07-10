@@ -1,10 +1,12 @@
 // Simple Dashboard Backend Server
-// Now using ioncontroller for all API functions
+// Now using ioncontroller for all API functions with Redis caching
 
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const ionController = require('./controllers/ioncontroller');
+const cacheController = require('./controllers/cacheController');
+const { initializeRedis } = require('./config/redis');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,7 +32,11 @@ app.use(cors({
 
 app.use(express.json());
 
-// No caching - removed for better real-time data
+// ===== REDIS CACHE INITIALIZATION =====
+// Initialize Redis cache on server startup
+initializeRedis().catch(error => {
+  console.error('Failed to initialize Redis:', error.message);
+});
 
 // ===== API ENDPOINTS =====
 
@@ -60,6 +66,29 @@ app.get('/api/jira-monthly-triaging', ionController.getMonthlyTriagingData);
 
 // Get bug areas data for version 12.8
 app.get('/api/jira-bug-areas', ionController.getBugAreasData);
+
+// ===== CACHE MANAGEMENT ENDPOINTS =====
+
+// Get cache status and statistics
+app.get('/api/cache/status', cacheController.getCacheStatus);
+
+// Clear all cache
+app.delete('/api/cache/clear', cacheController.clearAllCache);
+
+// Clear Jira cache only
+app.delete('/api/cache/clear/jira', cacheController.clearJiraCache);
+
+// Clear dashboard cache only
+app.delete('/api/cache/clear/dashboard', cacheController.clearDashboardCache);
+
+// Clear specific cache key
+app.delete('/api/cache/clear/:key', cacheController.clearSpecificCache);
+
+// Get specific cache value
+app.get('/api/cache/get/:key', cacheController.getCacheValue);
+
+// Warm up cache
+app.post('/api/cache/warmup', cacheController.warmUpCache);
 
 // Start the server
 app.listen(PORT, () => {
