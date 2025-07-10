@@ -191,6 +191,97 @@ const cacheUtils = {
   generateKey(type, identifier = '') {
     const baseKey = CACHE_KEYS[type] || type;
     return identifier ? `${baseKey}:${identifier}` : baseKey;
+  },
+
+  /**
+   * Invalidate cache keys matching a pattern
+   * @param {string} pattern - Pattern to match (supports wildcards)
+   * @returns {Promise<number>} - Number of keys invalidated
+   */
+  async invalidatePattern(pattern) {
+    try {
+      if (!redisCache) return 0;
+
+      // For Keyv, we need to manually track and match keys
+      // This is a simplified implementation - in production you might want to use Redis SCAN
+      const keysToDelete = [];
+
+      // Get all cache keys from our analytics or maintain a key registry
+      // For now, we'll use the known cache key patterns
+      const allPatterns = Object.values(CACHE_KEYS);
+
+      for (const keyPattern of allPatterns) {
+        if (keyPattern.includes(pattern) || pattern.includes(keyPattern)) {
+          // Try to delete variations of this key
+          const variations = [
+            keyPattern,
+            `${keyPattern}:all`,
+            `${keyPattern}:test_cases`,
+            `${keyPattern}:2025_monthly`,
+            `${keyPattern}:v12.8`,
+            `${keyPattern}:batch`
+          ];
+
+          for (const variation of variations) {
+            try {
+              await redisCache.delete(variation);
+              keysToDelete.push(variation);
+            } catch (error) {
+              // Key might not exist, continue
+            }
+          }
+        }
+      }
+
+      console.log(`🗑️ Invalidated ${keysToDelete.length} cache keys matching pattern: ${pattern}`);
+      return keysToDelete.length;
+
+    } catch (error) {
+      console.error(`Cache pattern invalidation error for ${pattern}:`, error.message);
+      return 0;
+    }
+  },
+
+  /**
+   * Get all cache keys (for analytics and management)
+   * @returns {Promise<Array>} - Array of cache keys
+   */
+  async getAllKeys() {
+    try {
+      if (!redisCache) return [];
+
+      // This is a limitation of Keyv - it doesn't provide a way to list all keys
+      // In a production environment, you'd want to use Redis directly for this
+      // For now, return the known key patterns
+      return Object.values(CACHE_KEYS);
+
+    } catch (error) {
+      console.error('Get all cache keys error:', error.message);
+      return [];
+    }
+  },
+
+  /**
+   * Get cache size and memory usage
+   * @returns {Promise<Object>} - Cache statistics
+   */
+  async getCacheSize() {
+    try {
+      if (!redisCache) return { size: 0, memory: 0 };
+
+      // This would need Redis-specific implementation for accurate memory usage
+      const keys = await this.getAllKeys();
+
+      return {
+        estimatedKeys: keys.length,
+        isRedisAvailable,
+        timestamp: new Date().toISOString()
+      };
+
+    } catch (error) {
+      console.error('Get cache size error:', error.message);
+      return { size: 0, memory: 0, error: error.message };
+    }
   }
 };
 

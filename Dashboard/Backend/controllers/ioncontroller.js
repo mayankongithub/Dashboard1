@@ -30,14 +30,27 @@ const jira = new JiraClient(JIRA_CONFIG);
  */
 const getTestCaseData = async (req, res) => {
   const startTime = Date.now();
-  const cacheKey = cacheUtils.generateKey('JIRA_TEST_CASES', 'current');
 
   try {
-    // Try to get from cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_test_cases_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Test case data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_TEST_CASES', 'current');
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
       const responseTime = Date.now() - startTime;
-      console.log(`🚀 CACHE HIT - Test case data served in ${responseTime}ms`);
+      console.log(`⚡ CACHE HIT - Test case data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
@@ -63,6 +76,9 @@ const getTestCaseData = async (req, res) => {
     // Cache the result
     await cacheUtils.set(cacheKey, responseData, CACHE_TTL.MEDIUM);
 
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_test_cases_warmed', responseData, CACHE_TTL.MEDIUM);
+
     const responseTime = Date.now() - startTime;
     console.log(`⏱️  CACHE MISS - Test case data fetched and cached in ${responseTime}ms`);
     console.log(`Test case data: ${JSON.stringify(responseData)}`);
@@ -80,14 +96,27 @@ const getTestCaseData = async (req, res) => {
  */
 const getMonthlyTestCaseData = async (req, res) => {
   const startTime = Date.now();
-  const cacheKey = cacheUtils.generateKey('JIRA_MONTHLY_DATA', 'test_cases');
 
   try {
-    // Try to get from cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_monthly_test_cases_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Monthly test case data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_MONTHLY_DATA', 'test_cases');
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
       const responseTime = Date.now() - startTime;
-      console.log(`🚀 CACHE HIT - Monthly test case data served in ${responseTime}ms`);
+      console.log(`⚡ CACHE HIT - Monthly test case data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
@@ -130,7 +159,33 @@ const getMonthlyTestCaseData = async (req, res) => {
  * Get all test cases
  */
 const getAllTestCaseData = async (req, res) => {
+  const startTime = Date.now();
+
   try {
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_all_test_cases_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - All test case data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_ALL_TEST_CASES', 'current');
+    const cachedData = await cacheUtils.get(cacheKey);
+
+    if (cachedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`⚡ CACHE HIT - All test case data served in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'HIT');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(cachedData);
+    }
+
     // Direct JQL queries for all, manual and automated test cases using user-specified patterns
     const allJQL = `project = SFAP AND issuetype = Test`;
     const manualJQL = `project = SFAP AND issuetype = Test AND Method IN (Manual,EMPTY)`;
@@ -147,6 +202,17 @@ const getAllTestCaseData = async (req, res) => {
       manual: manualResult.total,
       automated: automatedResult.total
     };
+
+    // Cache the result
+    await cacheUtils.set(cacheKey, responseData, CACHE_TTL.MEDIUM);
+
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_all_test_cases_warmed', responseData, CACHE_TTL.MEDIUM);
+
+    const responseTime = Date.now() - startTime;
+    console.log(`⏱️  CACHE MISS - All test case data fetched and cached in ${responseTime}ms`);
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('X-Response-Time', `${responseTime}ms`);
     res.json(responseData);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -185,14 +251,27 @@ const getCumulativeTestCaseData = async (req, res) => {
  */
 const getCumulativeMonthlyTestCaseData = async (req, res) => {
   const startTime = Date.now();
-  const cacheKey = cacheUtils.generateKey('JIRA_CUMULATIVE_DATA', '2025_monthly');
 
   try {
-    // Try to get from cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_monthly_cumulative_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Cumulative monthly data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_CUMULATIVE_DATA', '2025_monthly');
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
       const responseTime = Date.now() - startTime;
-      console.log(`🚀 CACHE HIT - Cumulative monthly data served in ${responseTime}ms`);
+      console.log(`⚡ CACHE HIT - Cumulative monthly data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
@@ -299,6 +378,9 @@ const getCumulativeMonthlyTestCaseData = async (req, res) => {
     // Cache the result with extended TTL since this is historical data
     await cacheUtils.set(cacheKey, cumulativeMonthlyData, CACHE_TTL.EXTENDED);
 
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_monthly_cumulative_warmed', cumulativeMonthlyData, CACHE_TTL.EXTENDED);
+
     const responseTime = Date.now() - startTime;
     console.log(`⏱️  CACHE MISS - Cumulative monthly data fetched and cached in ${responseTime}ms`);
     console.log(`Successfully processed cumulative monthly data for ${cumulativeMonthlyData.length} months`);
@@ -327,11 +409,27 @@ const getBugStats = async (req, res) => {
       return res.status(400).json({ error: "Month must be between 1 and 12" });
     }
 
-    // Check cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_bug_stats_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Bug stats served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
     const cacheKey = cacheUtils.generateKey('JIRA_BUG_STATS', `${currentYear}-${month}`);
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`⚡ CACHE HIT - Bug stats served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
     }
 
@@ -383,6 +481,9 @@ const getBugStats = async (req, res) => {
     // Cache the result
     await cacheUtils.set(cacheKey, responseData, CACHE_TTL.SHORT);
 
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_bug_stats_warmed', responseData, CACHE_TTL.SHORT);
+
     const totalTime = Date.now() - startTime;
     console.log(`Bug stats completed in ${totalTime}ms: ${JSON.stringify(responseData)}`);
     res.setHeader('X-Cache', 'MISS');
@@ -401,14 +502,27 @@ const getMonthlyTriagingData = async (req, res) => {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth() + 1;
-  const cacheKey = cacheUtils.generateKey('JIRA_TRIAGING_DATA', `${currentYear}_monthly`);
 
   try {
-    // Try to get from cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_triaging_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Monthly triaging data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_TRIAGING_DATA', `${currentYear}_monthly`);
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
       const responseTime = Date.now() - startTime;
-      console.log(`🚀 CACHE HIT - Monthly triaging data served in ${responseTime}ms`);
+      console.log(`⚡ CACHE HIT - Monthly triaging data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
@@ -491,6 +605,9 @@ const getMonthlyTriagingData = async (req, res) => {
 
     // Cache the result
     await cacheUtils.set(cacheKey, monthlyResults, CACHE_TTL.MEDIUM);
+
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_triaging_warmed', monthlyResults, CACHE_TTL.MEDIUM);
 
     const responseTime = Date.now() - startTime;
     console.log(`⏱️  CACHE MISS - Monthly triaging data fetched and cached in ${responseTime}ms`);
@@ -628,72 +745,160 @@ const getBugAreasDataInternal = async () => {
 };
 
 /**
- * Batch API endpoint to get all dashboard data in one request
+ * Enhanced batch API endpoint with cache warming integration
+ * Serves pre-warmed cache data when available for instant responses
+ * Falls back to fresh data if cache is not available
  */
-const getDashboardData = async (_req, res) => {
+const getDashboardData = async (req, res) => {
+  const startTime = Date.now();
+
   try {
-    // Check cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'dashboard_batch_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Dashboard data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Data-Source', 'pre-warmed');
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
     const cacheKey = cacheUtils.generateKey('DASHBOARD_BATCH', 'all');
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`⚡ CACHE HIT - Dashboard data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      res.setHeader('X-Data-Source', 'regular-cache');
       return res.json(cachedData);
     }
 
-    console.log('Fetching all dashboard data in batch...');
+    // If no cache available, fetch all data (default behavior)
+    const requestedTypes = ['testCases', 'bugStats', 'monthlyData', 'bugAreas', 'triaging'];
+    console.log(`Fetching all dashboard data: [${requestedTypes.join(', ')}]`);
 
-    // Execute all queries in parallel for maximum performance
-    const [
-      manualResult,
-      automatedResult,
-      allResult,
-      monthlyDataResult,
-      bugStatsResult,
-      bugAreasResult
-    ] = await Promise.all([
-      // Basic test case queries using user-specified patterns
-      jira.searchJira(`project = ${JIRA_PROJECT} AND issuetype = Test AND Method IN (Manual,EMPTY)`),
-      jira.searchJira(`project = ${JIRA_PROJECT} AND issuetype IS NOT EMPTY AND Method = Automated`),
-      jira.searchJira(`project = '${JIRA_PROJECT}' AND issuetype = Test`),
+    // Prepare parallel execution array based on requested data
+    const parallelTasks = [];
+    const taskMap = {};
 
-      // Monthly data - get cumulative monthly data
-      getCumulativeMonthlyDataInternal(),
+    // Basic test case data (always needed for testCases)
+    if (requestedTypes.includes('testCases')) {
+      taskMap.manualResult = parallelTasks.length;
+      parallelTasks.push(
+        jira.searchJira(`project = ${JIRA_PROJECT} AND issuetype = Test AND Method IN (Manual,EMPTY)`)
+      );
 
-      // Bug stats for current month
-      getBugStatsInternal(),
+      taskMap.automatedResult = parallelTasks.length;
+      parallelTasks.push(
+        jira.searchJira(`project = ${JIRA_PROJECT} AND issuetype IS NOT EMPTY AND Method = Automated`)
+      );
 
-      // Bug areas data
-      getBugAreasDataInternal().catch(error => {
-        console.error('Bug areas data failed in batch:', error.message);
-        return { totalBugs: 0, labelCounts: [], version: '12.8', lastUpdated: new Date().toISOString() };
-      })
-    ]);
+      taskMap.allResult = parallelTasks.length;
+      parallelTasks.push(
+        jira.searchJira(`project = '${JIRA_PROJECT}' AND issuetype = Test`)
+      );
+    }
 
+    // Monthly data
+    if (requestedTypes.includes('monthlyData')) {
+      taskMap.monthlyDataResult = parallelTasks.length;
+      parallelTasks.push(getCumulativeMonthlyDataInternal());
+    }
+
+    // Bug statistics
+    if (requestedTypes.includes('bugStats')) {
+      taskMap.bugStatsResult = parallelTasks.length;
+      parallelTasks.push(getBugStatsInternal());
+    }
+
+    // Bug areas data
+    if (requestedTypes.includes('bugAreas')) {
+      taskMap.bugAreasResult = parallelTasks.length;
+      parallelTasks.push(
+        getBugAreasDataInternal().catch(error => {
+          console.error('Bug areas data failed in batch:', error.message);
+          return { totalBugs: 0, labelCounts: [], version: '12.8', lastUpdated: new Date().toISOString() };
+        })
+      );
+    }
+
+    // Triaging data
+    if (requestedTypes.includes('triaging')) {
+      taskMap.triagingResult = parallelTasks.length;
+      parallelTasks.push(getMonthlyTriagingDataInternal());
+    }
+
+    // Execute all requested queries in parallel
+    console.log(`Executing ${parallelTasks.length} parallel tasks...`);
+    const results = await Promise.all(parallelTasks);
+
+    // Build response data based on requested types
     const responseData = {
-      testCaseData: {
-        manual: manualResult.total,
-        automated: automatedResult.total
-      },
-      allTestCaseData: {
-        all: allResult.total,
-        manual: manualResult.total,
-        automated: automatedResult.total
-      },
-      monthlyData: monthlyDataResult,
-      bugStats: bugStatsResult,
-      bugAreas: bugAreasResult,
+      requestedTypes,
       timestamp: new Date().toISOString()
     };
 
-    // Cache the result
-    await cacheUtils.set(cacheKey, responseData, CACHE_TTL.SHORT);
+    // Add test case data if requested
+    if (requestedTypes.includes('testCases')) {
+      const manualResult = results[taskMap.manualResult];
+      const automatedResult = results[taskMap.automatedResult];
+      const allResult = results[taskMap.allResult];
 
-    console.log('Batch dashboard data fetched successfully');
+      responseData.testCases = {
+        manual: manualResult.total,
+        automated: automatedResult.total,
+        total: allResult.total
+      };
+    }
+
+    // Add monthly data if requested
+    if (requestedTypes.includes('monthlyData')) {
+      responseData.monthlyData = results[taskMap.monthlyDataResult];
+    }
+
+    // Add bug stats if requested
+    if (requestedTypes.includes('bugStats')) {
+      responseData.bugStats = results[taskMap.bugStatsResult];
+    }
+
+    // Add bug areas if requested
+    if (requestedTypes.includes('bugAreas')) {
+      responseData.bugAreas = results[taskMap.bugAreasResult];
+    }
+
+    // Add triaging data if requested
+    if (requestedTypes.includes('triaging')) {
+      responseData.triaging = results[taskMap.triagingResult];
+    }
+
+    // Cache the result with appropriate TTL
+    const cacheTime = requestedTypes.includes('bugStats') ? CACHE_TTL.SHORT : CACHE_TTL.MEDIUM;
+    await cacheUtils.set(cacheKey, responseData, cacheTime);
+
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('dashboard_batch_warmed', responseData, cacheTime);
+
+    const responseTime = Date.now() - startTime;
+    console.log(`⏱️  CACHE MISS - Selective batch data fetched in ${responseTime}ms`);
     res.setHeader('X-Cache', 'MISS');
+    res.setHeader('X-Response-Time', `${responseTime}ms`);
+    res.setHeader('X-Data-Types', requestedTypes.join(','));
+    res.setHeader('X-Parallel-Tasks', parallelTasks.length.toString());
     res.json(responseData);
+
   } catch (error) {
-    console.error("Batch dashboard data error:", error.message);
-    res.status(500).json({ error: error.message });
+    const responseTime = Date.now() - startTime;
+    console.error(`Batch dashboard data error after ${responseTime}ms:`, error.message);
+    res.status(500).json({
+      error: error.message,
+      responseTime: `${responseTime}ms`
+    });
   }
 };
 
@@ -796,14 +1001,27 @@ const getBugStatsInternal = async () => {
  */
 const getBugAreasData = async (req, res) => {
   const startTime = Date.now();
-  const cacheKey = cacheUtils.generateKey('JIRA_BUG_AREAS', 'v12.8');
 
   try {
-    // Try to get from cache first
+    // First, try to get pre-warmed cache data
+    const warmedCacheKey = 'jira_bug_areas_warmed';
+    const warmedData = await cacheUtils.get(warmedCacheKey);
+
+    if (warmedData) {
+      const responseTime = Date.now() - startTime;
+      console.log(`🔥 WARMED CACHE HIT - Bug areas data served instantly in ${responseTime}ms`);
+      res.setHeader('X-Cache', 'WARMED');
+      res.setHeader('X-Response-Time', `${responseTime}ms`);
+      return res.json(warmedData);
+    }
+
+    // Fallback: Check regular cache
+    const cacheKey = cacheUtils.generateKey('JIRA_BUG_AREAS', 'v12.8');
     const cachedData = await cacheUtils.get(cacheKey);
+
     if (cachedData) {
       const responseTime = Date.now() - startTime;
-      console.log(`🚀 CACHE HIT - Bug areas data served in ${responseTime}ms`);
+      console.log(`⚡ CACHE HIT - Bug areas data served in ${responseTime}ms`);
       res.setHeader('X-Cache', 'HIT');
       res.setHeader('X-Response-Time', `${responseTime}ms`);
       return res.json(cachedData);
@@ -813,6 +1031,9 @@ const getBugAreasData = async (req, res) => {
 
     // Cache the result with long TTL since bug areas data is relatively stable
     await cacheUtils.set(cacheKey, responseData, CACHE_TTL.LONG);
+
+    // Also store in warmed cache for instant access
+    await cacheUtils.set('jira_bug_areas_warmed', responseData, CACHE_TTL.LONG);
 
     const responseTime = Date.now() - startTime;
     console.log(`⏱️  CACHE MISS - Bug areas data fetched and cached in ${responseTime}ms`);
@@ -824,6 +1045,75 @@ const getBugAreasData = async (req, res) => {
     console.error("Bug areas data error:", error.message);
     res.status(500).json({ error: error.message });
   }
+};
+
+// Internal helper function for monthly triaging data (used in batch API)
+const getMonthlyTriagingDataInternal = async () => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  console.log(`Internal: Fetching monthly triaging data for year: ${currentYear}, current month: ${currentMonth}`);
+
+  // Optimize: Create user query once
+  const userQuery = USERS.map(user => `description ~ "Triaged by: ${user}"`).join(' OR ');
+
+  // Optimize: Fetch all data for the year in one query, then process by month
+  const yearStartDate = `${currentYear}-01-01`;
+  const yearEndDate = moment({ year: currentYear, month: currentMonth - 1 }).endOf('month').format('YYYY-MM-DD');
+
+  // Single query to get all bugs for the year
+  const baseJQL = `project=${JIRA_PROJECT} AND issuetype=Bug AND reporter=bugs-bunny AND createdDate >= "${yearStartDate}" AND createdDate <= "${yearEndDate}" AND (${userQuery})`;
+
+  // Execute all three queries in parallel for the entire year
+  const [allBugsResult, allCiBugsResult, allScriptBugsResult] = await Promise.all([
+    jira.searchJira(baseJQL, { maxResults: 1000, fields: ['created', 'components'] }),
+    jira.searchJira(`${baseJQL} AND component = "Continuous Integration"`, { maxResults: 1000, fields: ['created'] }),
+    jira.searchJira(`${baseJQL} AND component = "Automated Test"`, { maxResults: 1000, fields: ['created'] })
+  ]);
+
+  // Process all months in parallel
+  const monthPromises = Array.from({ length: currentMonth }, (_, i) => i + 1).map(async (month) => {
+    const monthStart = moment({ year: currentYear, month: month - 1 }).startOf('month');
+    const monthEnd = moment({ year: currentYear, month: month - 1 }).endOf('month');
+
+    // Parallel filtering for each month's data
+    const [monthBugs, monthCiBugs, monthScriptBugs] = await Promise.all([
+      Promise.resolve(allBugsResult.issues.filter(bug => {
+        const createdDate = moment(bug.fields.created);
+        return createdDate.isBetween(monthStart, monthEnd, null, '[]');
+      })),
+      Promise.resolve(allCiBugsResult.issues.filter(bug => {
+        const createdDate = moment(bug.fields.created);
+        return createdDate.isBetween(monthStart, monthEnd, null, '[]');
+      })),
+      Promise.resolve(allScriptBugsResult.issues.filter(bug => {
+        const createdDate = moment(bug.fields.created);
+        return createdDate.isBetween(monthStart, monthEnd, null, '[]');
+      }))
+    ]);
+
+    const totalBugs = monthBugs.length;
+    const ciBugs = monthCiBugs.length;
+    const scriptBugs = monthScriptBugs.length;
+
+    const monthName = moment().month(month - 1).format('MMMM');
+    const monthShort = moment().month(month - 1).format('MMM');
+
+    return {
+      month,
+      monthName,
+      monthShort,
+      year: currentYear,
+      totalBugs,
+      firmwareBugs: totalBugs - ciBugs - scriptBugs,
+      ciBugs,
+      scriptBugs
+    };
+  });
+
+  // Execute all month processing in parallel
+  return await Promise.all(monthPromises);
 };
 
 // ===== EXPORTS =====
