@@ -1,0 +1,27 @@
+{
+  "name": "dashboard-fullstack",
+  "version": "1.0.0",
+  "description": "Full-stack Dashboard Application",
+  "scripts": {
+    "dev": "concurrently --kill-others \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd Backend && npm run dev:backend-only",
+    "dev:frontend": "cd Frontend/client && npm run dev:frontend-only",
+    "start": "concurrently --kill-others \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd Backend && npm start",
+    "start:frontend": "cd Frontend/client && npm run preview",
+    "install:all": "npm install && cd Backend && npm install && cd ../Frontend/client && npm install",
+    "build": "cd Frontend/client && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "dashboard",
+    "fullstack",
+    "react",
+    "express",
+    "jira"
+  ],
+  "author": "",
+  "license": "ISC"
+}
