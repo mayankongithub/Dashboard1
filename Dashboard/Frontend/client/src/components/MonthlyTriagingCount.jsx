@@ -48,7 +48,7 @@ const MonthlyTriagingCount = ({ onErrorChange, preloadedData }) => {
 
     console.log('Fetching monthly triaging count data');
 
-    const url = `/api/jira-monthly-triaging`;
+    const url = `http://localhost:5000/api/jira-monthly-triaging`;
 
     fetch(url)
       .then(res => {
