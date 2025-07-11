@@ -31,7 +31,7 @@ const HomeBugStats = ({ preloadedBugStatsData, preloadedMonthlyTriagingData }) =
     }
 
     // If month is null, don't include any parameters
-    const url = month ? `https://localhost:5000/api/jira-bug-stats?month=${month}` : `http://localhost:5000/api/jira-bug-stats`;
+    const url = month ? `https://10.73.16.7:5000/api/jira-bug-stats?month=${month}` : `http://10.73.16.7:5000/api/jira-bug-stats`;
     fetch(url)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP error! ${res.status}`);
